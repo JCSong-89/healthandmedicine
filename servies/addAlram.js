@@ -1,24 +1,26 @@
-import {saveToFolder} from '../middleWare/saveJson';
-import {readAlrams} from '../middleWare/readAlrams';
+import createTitle from '../DAO/createTitle';
 
 export default async (req, res, next) => {
   try {
+    const data = {
+      Title: req.body.Title}
+   
+    if (!data.Title) {
+      return res.status(400).send({message: 'NEED TITLE DATA'});
+    }
+        
     const ranNum = Math.floor(Math.random() * Math.floor(100));
-    const Title = {
-      Title: req.body.Title
-    };
     const id = {
-      id: ranNum.toString() + req.body.Title
-    };
-    const newTitle = Object.assign({}, id, Title);
+      id: ranNum.toString() + data.Title.charCodeAt()
+    };   
+    const newTitle = Object.assign({}, id, data);
+    const result = createTitle(newTitle)
+
+    if (!result) {
+      return res.status(400).send({message: "FAIL CREATE NEW TITLE"})
+    }
     
-    saveToFolder(newTitle, (err) => {    
-      if (err) {
-        return res.status(404).send('not saved new title');
-      }
-      const {content} = readAlrams();
-      return res.status(200).send(content)
-   });
+    return res.status(201).send({message: "CREATED NEW TITLE"})
   } catch (error) {
     next(error.message);
   }
